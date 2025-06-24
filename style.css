@@ -1,0 +1,129 @@
+/* Base Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #F0F4F8;
+  color: #263238;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+.container {
+  text-align: center;
+  padding: 2rem;
+  max-width: 600px;
+  width: 100%;
+  animation: fadeIn 1.5s ease-in;
+}
+
+.brand {
+  font-size: 2.5rem;
+  color: #546E7A;
+  margin-bottom: 0.5rem;
+  animation: slideUp 1s ease-out;
+}
+
+.tagline {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  color: #78909C;
+  animation: slideUp 1.3s ease-out;
+}
+
+.countdown {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  animation: slideUp 1.6s ease-out;
+}
+
+.countdown div {
+  background-color: #B0BEC5;
+  padding: 1rem;
+  border-radius: 8px;
+  min-width: 70px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.countdown span:first-child {
+  display: block;
+  font-size: 1.6rem;
+  font-weight: bold;
+}
+
+.newsletter {
+  animation: fadeIn 2s ease-in;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.newsletter input {
+  padding: 0.7rem;
+  width: 100%;
+  max-width: 300px;
+  border: 2px solid #78909C;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.newsletter button {
+  padding: 0.7rem 1.5rem;
+  background-color: #546E7A;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  width: 100%;
+  max-width: 300px;
+}
+
+.newsletter button:hover {
+  background-color: #78909C;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Responsive Styling */
+@media (max-width: 480px) {
+  .brand {
+    font-size: 2rem;
+  }
+
+  .tagline {
+    font-size: 1rem;
+  }
+
+  .countdown {
+    gap: 0.5rem;
+  }
+
+  .countdown div {
+    min-width: 60px;
+    padding: 0.7rem;
+  }
+
+  .countdown span:first-child {
+    font-size: 1.3rem;
+  }
+}
