@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>404 – Page Lost!</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(#f9f7f3, #f1e9d6);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+      color: #333;
+      position: relative;
+    }
+
+    /* Twinkling stars background */
+    .stars {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .star {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle 3s infinite ease-in-out;
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
+
+    .container {
+      text-align: center;
+      animation: fadeIn 1.2s ease-out;
+      z-index: 1;
+      position: relative;
+    }
+
+    svg.penguin {
+      width: 200px;
+      height: auto;
+      margin-bottom: 20px;
+      animation: waddle 2s infinite ease-in-out;
+    }
+
+    h1 {
+      font-size: 6rem;
+      margin: 0;
+      color: #E07A5F;
+    }
+
+    h2 {
+      font-size: 2rem;
+      margin: 10px 0;
+      color: #3D405B;
+    }
+
+    p {
+      font-size: 1.1rem;
+      color: #555;
+      margin-bottom: 20px;
+    }
+
+    .button-group {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    a.button {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #81B29A;
+      color: white;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: bold;
+      transition: transform 0.2s ease, background 0.3s ease;
+    }
+
+    a.button:hover {
+      background: #3D405B;
+      transform: scale(1.05);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes waddle {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(5px); }
+    }
+
+    @keyframes blink {
+      0%, 90%, 100% { r: 2; }
+      95% { r: 0.2; }
+    }
+
+    @keyframes flap {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(10deg); }
+    }
+
+    .eye {
+      animation: blink 4s infinite;
+    }
+
+    .wing {
+      transform-origin: center;
+      animation: flap 3s infinite ease-in-out;
+    }
+
+    #penguin-head {
+      transition: transform 0.1s ease-out;
+      transform-origin: 100px 60px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Twinkling stars -->
+  <div class="stars">
+    <script>
+      const starField = document.currentScript.parentElement;
+      for (let i = 0; i < 30; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.style.top = `${Math.random() * 100}%`;
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.animationDelay = `${Math.random() * 3}s`;
+        starField.appendChild(star);
+      }
+    </script>
+  </div>
+
+  <!-- Content -->
+  <div class="container">
+    <svg class="penguin" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <!-- Body -->
+      <ellipse cx="100" cy="120" rx="50" ry="70" fill="#3D405B" />
+      <ellipse cx="100" cy="130" rx="30" ry="50" fill="#F2F2F2" />
+      <ellipse class="wing" cx="50" cy="120" rx="15" ry="30" fill="#3D405B" />
+      <ellipse class="wing" cx="150" cy="120" rx="15" ry="30" fill="#3D405B" />
+
+      <!-- Head group (rotates toward cursor) -->
+      <g id="penguin-head">
+        <circle cx="100" cy="60" r="30" fill="#3D405B" />
+        <circle cx="90" cy="55" r="6" fill="white" />
+        <circle class="eye" cx="90" cy="55" r="2" fill="#000" />
+        <circle cx="110" cy="55" r="6" fill="white" />
+        <circle class="eye" cx="110" cy="55" r="2" fill="#000" />
+        <polygon points="95,65 105,65 100,75" fill="#E07A5F" />
+      </g>
+
+      <!-- Feet -->
+      <ellipse cx="85" cy="190" rx="10" ry="5" fill="#E07A5F" />
+      <ellipse cx="115" cy="190" rx="10" ry="5" fill="#E07A5F" />
+    </svg>
+
+    <h1>404</h1>
+    <h2>Our penguin took a wrong turn...</h2>
+    <p>Looks like this page slipped on some ice and wandered off. Let’s help you slide back on track 🧊🐧</p>
+
+    <div class="button-group">
+      <a class="button" href="https://ksevillejo.com/">Take Me Home</a>
+      <a class="button" href="https://ksevillejo.com/portfolio">Explore Portfolio</a>
+    </div>
+  </div>
+
+  <!-- Penguin head tracking script -->
+  <script>
+    const head = document.getElementById("penguin-head");
+    document.addEventListener("mousemove", (e) => {
+      const rect = head.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const dx = e.clientX - centerX;
+      const dy = e.clientY - centerY;
+      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+      const clampedAngle = Math.max(-20, Math.min(20, angle));
+      head.setAttribute("transform", `rotate(${clampedAngle}, 100, 60)`);
+    });
+  </script>
+
+</body>
+</html>
+
+
+
+---
+permalink: /404.html
+---
