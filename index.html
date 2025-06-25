@@ -4,7 +4,55 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dev Chollo – Coming Soon</title>
-  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.6);
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 2rem;
+      border-radius: 12px;
+      max-width: 400px;
+      text-align: center;
+      position: relative;
+      animation: fadeIn 0.4s ease;
+    }
+    .modal-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+    .modal-content h2 {
+      margin-top: 0.5rem;
+    }
+    .modal-close {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.75rem;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #aaa;
+    }
+    .modal-close:hover {
+      color: #000;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: scale(0.95);}
+      to {opacity: 1; transform: scale(1);}
+    }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -18,12 +66,90 @@
       <div><span id="seconds">00</span><span>Seconds</span></div>
     </div>
 
-    <form class="newsletter">
-      <input type="email" placeholder="Get notified..." required/>
+    <form class="newsletter-form" id="newsletter-form">
+      <input type="email" id="email" placeholder="Get notified..." required />
       <button type="submit">Notify Me</button>
     </form>
   </div>
 
+  <!-- Modal -->
+  <div class="modal" id="feedback-modal">
+    <div class="modal-content" id="modal-content">
+      <span class="modal-close" onclick="closeModal()">&times;</span>
+      <img id="modal-gif" src="" alt="Feedback GIF" />
+      <h2 id="modal-title"></h2>
+      <p id="modal-message"></p>
+    </div>
+  </div>
+
   <script src="script.js"></script>
+  <script type="module">
+    import firebaseConfig from "./config/config.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const form = document.getElementById("newsletter-form");
+
+    const modal = document.getElementById("feedback-modal");
+    const modalGif = document.getElementById("modal-gif");
+    const modalTitle = document.getElementById("modal-title");
+    const modalMessage = document.getElementById("modal-message");
+
+    function showModal({ gif, title, message }) {
+      modalGif.src = gif;
+      modalTitle.textContent = title;
+      modalMessage.textContent = message;
+      modal.style.display = "block";
+    }
+
+    window.closeModal = function () {
+      modal.style.display = "none";
+    };
+
+    // Regex email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const emailInput = document.getElementById("email");
+      const email = emailInput.value.trim();
+
+      if (!emailRegex.test(email)) {
+        showModal({
+          gif: "https://media.giphy.com/media/26ufnwz3wDUli7GU0/giphy.gif",
+          title: "Oops!",
+          message: "Please enter a valid email address 🧐",
+        });
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, "newsletter"), {
+          email,
+          subscribedAt: new Date(),
+        });
+
+        showModal({
+          gif: "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif",
+          title: "You’re In!",
+          message: "You've been successfully subscribed to Dev Chollo 🚀",
+        });
+
+        form.reset();
+      } catch (error) {
+        console.error("Error saving email:", error);
+        showModal({
+          gif: "https://media.giphy.com/media/3og0IPxMM0erATueVW/giphy.gif",
+          title: "Oh no!",
+          message: "Something went wrong. Please try again later 🙈",
+        });
+      }
+    });
+  </script>
 </body>
 </html>

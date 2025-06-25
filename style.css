@@ -61,14 +61,14 @@ body {
   font-weight: bold;
 }
 
-.newsletter {
+.newsletter-form {
   animation: fadeIn 2s ease-in;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.newsletter input {
+.newsletter-form input {
   padding: 0.7rem;
   width: 100%;
   max-width: 300px;
@@ -77,7 +77,7 @@ body {
   margin-bottom: 1rem;
 }
 
-.newsletter button {
+.newsletter-form button {
   padding: 0.7rem 1.5rem;
   background-color: #546E7A;
   color: white;
@@ -89,7 +89,7 @@ body {
   max-width: 300px;
 }
 
-.newsletter button:hover {
+.newsletter-form button:hover {
   background-color: #78909C;
 }
 
@@ -126,4 +126,79 @@ body {
   .countdown span:first-child {
     font-size: 1.3rem;
   }
+}
+
+
+.container2 {
+  max-width: 600px;
+  margin: 4rem auto;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+#email-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#email-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #eee;
+  font-size: 0.95rem;
+}
+
+.email {
+  font-weight: 500;
+  color: #222;
+}
+
+.date {
+  color: #777;
+  font-style: italic;
+}
+
+
+#subscriber-count {
+  font-weight: bold;
+  color: #2c7a7b;
+}
+
+
+#email-list li {
+  display: flex;
+  flex-direction: column; /* ← this stacks items on small screens */
+  gap: 4px;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #eee;
+  font-size: 0.95rem;
+}
+
+@media (min-width: 500px) {
+  #email-list li {
+    flex-direction: row;           /* ← show in a row on wider screens */
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.email {
+  font-weight: 500;
+  color: #222;
+}
+
+.date {
+  color: #777;
+  font-style: italic;
+  font-size: 0.9rem;
 }

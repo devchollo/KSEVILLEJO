@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Subscribers</title>
+    <link rel="stylesheet" href="../style.css" />
+    <style>
+      .container2 {
+        max-width: 800px;
+        margin: 4rem auto;
+        padding: 2rem;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+      }
+
+      h1, h2 {
+        text-align: center;
+        margin-bottom: 1rem;
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+      }
+
+      input[type="date"], input[type="text"], select {
+        padding: 0.5rem;
+        font-size: 1rem;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+      }
+
+      .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1rem;
+        align-items: center;
+      }
+
+      button {
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        border: none;
+        border-radius: 6px;
+        background-color: #2563eb;
+        color: white;
+        transition: background 0.3s ease;
+      }
+
+      button:hover {
+        background-color: #1e40af;
+      }
+
+      #email-list {
+        list-style: none;
+        padding: 0;
+        margin-top: 1rem;
+      }
+
+      #email-list li {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #eee;
+        flex-wrap: wrap;
+      }
+
+      .email-col, .date-col, .actions-col {
+        flex: 1 1 30%;
+        min-width: 120px;
+        word-break: break-word;
+      }
+
+      .actions-col {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+      }
+
+      .actions-col button {
+        background: #f1f5f9;
+        color: #1e293b;
+        padding: 0.3rem 0.6rem;
+        font-size: 1rem;
+      }
+
+      .actions-col button:hover {
+        background-color: #e2e8f0;
+      }
+
+      .action-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1.5rem;
+      }
+
+      @media (max-width: 600px) {
+        #email-list li {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .actions-col {
+          justify-content: flex-start;
+          margin-top: 0.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container2">
+      <h1>📧 Newsletter Subscribers</h1>
+      <h2>Total: <span id="subscriber-count">0</span></h2>
+
+      <div class="controls">
+        <input type="text" id="search" placeholder="Search email...">
+        <input type="date" id="start-date">
+        <input type="date" id="end-date">
+        <select id="per-page">
+          <option value="5" selected>5</option>
+          <option value="10">10</option>
+          <option value="20">20</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+          <option value="all">All</option>
+        </select>
+      </div>
+
+      <div class="action-buttons">
+        <button id="copy-emails">📋 Copy All Emails</button>
+        <button id="mailto-emails">✉️ Email All</button>
+      </div>
+
+      <ul id="email-list"></ul>
+
+      <div class="pagination">
+        <button id="prev">Previous</button>
+        <span id="page-info">Page 1 of 1</span>
+        <button id="next">Next</button>
+      </div>
+    </div>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+      import {
+        getFirestore,
+        collection,
+        getDocs,
+        query,
+        orderBy,
+        deleteDoc,
+        doc
+      } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+      import firebaseConfig from "../config/config.js";
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
+      const listEl = document.getElementById("email-list");
+      const countEl = document.getElementById("subscriber-count");
+      const searchInput = document.getElementById("search");
+      const startDateInput = document.getElementById("start-date");
+      const endDateInput = document.getElementById("end-date");
+      const copyBtn = document.getElementById("copy-emails");
+      const mailBtn = document.getElementById("mailto-emails");
+      const pageInfo = document.getElementById("page-info");
+      const perPageSelect = document.getElementById("per-page");
+
+      let allData = [], page = 0, perPage = 5;
+
+      async function loadData() {
+        const q = query(collection(db, "newsletter"), orderBy("subscribedAt", "desc"));
+        const snapshot = await getDocs(q);
+        allData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        countEl.textContent = allData.length;
+        filterAndRender();
+      }
+
+      function getFilteredData() {
+        let filtered = allData;
+        const search = searchInput.value.toLowerCase();
+        const start = new Date(startDateInput.value);
+        const end = new Date(endDateInput.value);
+
+        if (search) {
+          filtered = filtered.filter(d => d.email.toLowerCase().includes(search));
+        }
+        if (startDateInput.value) {
+          filtered = filtered.filter(d => d.subscribedAt.toDate() >= start);
+        }
+        if (endDateInput.value) {
+          filtered = filtered.filter(d => d.subscribedAt.toDate() <= end);
+        }
+
+        return filtered;
+      }
+
+      function filterAndRender() {
+        const filtered = getFilteredData();
+        perPage = perPageSelect.value === "all" ? filtered.length : parseInt(perPageSelect.value);
+
+        const startIndex = page * perPage;
+        const pageData = filtered.slice(startIndex, startIndex + perPage);
+
+        listEl.innerHTML = "";
+        if (!pageData.length) {
+          listEl.innerHTML = "<li>No results found.</li>";
+          pageInfo.textContent = "Page 0 of 0";
+          return;
+        }
+
+        pageData.forEach(({ email, subscribedAt, id }) => {
+          const dateStr = subscribedAt.toDate().toLocaleDateString();
+          const li = document.createElement("li");
+
+          li.innerHTML = `
+            <div class="email-col">${email}</div>
+            <div class="date-col">${dateStr}</div>
+            <div class="actions-col">
+              <button onclick="window.location.href='mailto:${email}'">✉️</button>
+              <button onclick="navigator.clipboard.writeText('${email}').then(() => alert('📋 Copied: ${email}'))">📋</button>
+              <button data-id="${id}" class="delete-email-btn">🗑️</button>
+            </div>
+          `;
+          listEl.appendChild(li);
+        });
+
+        listEl.querySelectorAll(".delete-email-btn").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const docId = btn.getAttribute("data-id");
+            const emailEl = btn.closest("li").querySelector(".email-col").textContent;
+
+            if (confirm(`Delete ${emailEl}?`)) {
+              try {
+                await deleteDoc(doc(db, "newsletter", docId));
+                alert(`🗑️ Deleted ${emailEl}`);
+                loadData();
+              } catch (err) {
+                console.error(err);
+                alert("❌ Failed to delete.");
+              }
+            }
+          });
+        });
+
+        const totalPages = Math.ceil(filtered.length / perPage);
+        pageInfo.textContent = `Page ${page + 1} of ${totalPages}`;
+      }
+
+      copyBtn.onclick = () => {
+        const emails = getFilteredData().map(d => d.email).join(", ");
+        navigator.clipboard.writeText(emails).then(() => {
+          alert("✅ Emails copied to clipboard!");
+        }).catch(err => {
+          alert("❌ Failed to copy emails.");
+        });
+      };
+
+      mailBtn.onclick = () => {
+        const emails = getFilteredData().map(d => d.email).join(",");
+        window.location.href = `mailto:?bcc=${encodeURIComponent(emails)}`;
+      };
+
+      document.getElementById("prev").onclick = () => {
+        if (page > 0) page--;
+        filterAndRender();
+      };
+
+      document.getElementById("next").onclick = () => {
+        if ((page + 1) * perPage < getFilteredData().length) page++;
+        filterAndRender();
+      };
+
+      searchInput.addEventListener("input", () => {
+        page = 0;
+        filterAndRender();
+      });
+      startDateInput.addEventListener("change", () => {
+        page = 0;
+        filterAndRender();
+      });
+      endDateInput.addEventListener("change", () => {
+        page = 0;
+        filterAndRender();
+      });
+      perPageSelect.addEventListener("change", () => {
+        page = 0;
+        filterAndRender();
+      });
+
+      loadData();
+    </script>
+  </body>
+</html>
