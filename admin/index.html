@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Login</title>
+    <link rel="stylesheet" href="../style.css" />
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f8fafc;
+        font-family: Arial, sans-serif;
+      }
+
+      .login-container {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+        max-width: 400px;
+        width: 100%;
+      }
+
+      h2 {
+        text-align: center;
+        margin-bottom: 1.5rem;
+      }
+
+      input {
+        width: 100%;
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 1rem;
+      }
+
+      button {
+        width: 100%;
+        padding: 0.75rem;
+        border: none;
+        background-color: #2563eb;
+        color: white;
+        font-size: 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #1e40af;
+      }
+
+      .error {
+        color: red;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-container">
+      <h2>Admin Login</h2>
+      <div class="error" id="error-message"></div>
+      <input type="text" id="emailOrUsername" placeholder="Email or Username" />
+      <input type="password" id="password" placeholder="Password" />
+      <button id="loginBtn">Log In</button>
+    </div>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+      import {
+        getFirestore,
+        collection,
+        query,
+        getDocs,
+        where,
+      } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+      import firebaseConfig from "../config/config.js";
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
+      const loginBtn = document.getElementById("loginBtn");
+      const errorEl = document.getElementById("error-message");
+
+      function isValidEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      }
+
+      function isValidUsername(username) {
+        return /^[a-zA-Z0-9_]{3,20}$/.test(username);
+      }
+
+      function isValidPassword(password) {
+        return password.length >= 6;
+      }
+
+      async function hashPassword(password) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password);
+        const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+        return Array.from(new Uint8Array(hashBuffer))
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+      }
+
+      loginBtn.addEventListener("click", async () => {
+        const emailOrUsername = document
+          .getElementById("emailOrUsername")
+          .value.trim();
+        const password = document.getElementById("password").value.trim();
+        errorEl.textContent = "";
+
+        if (!emailOrUsername || !password) {
+          errorEl.textContent = "Please enter both email/username and password.";
+          return;
+        }
+
+        const isEmail = emailOrUsername.includes("@");
+
+        if (isEmail && !isValidEmail(emailOrUsername)) {
+          errorEl.textContent = "Invalid email format.";
+          return;
+        }
+
+        if (!isEmail && !isValidUsername(emailOrUsername)) {
+          errorEl.textContent = "Invalid username format.";
+          return;
+        }
+
+        if (!isValidPassword(password)) {
+          errorEl.textContent = "Password must be at least 6 characters.";
+          return;
+        }
+
+        try {
+          const field = isEmail ? "email" : "username";
+          const userQuery = query(
+            collection(db, "users"),
+            where(field, "==", emailOrUsername)
+          );
+          const querySnapshot = await getDocs(userQuery);
+
+          if (querySnapshot.empty) {
+            errorEl.textContent = "User not found.";
+            return;
+          }
+
+          const userDoc = querySnapshot.docs[0];
+          const userData = userDoc.data();
+
+          const hashedInputPassword = await hashPassword(password);
+
+          if (userData.password !== hashedInputPassword) {
+            errorEl.textContent = "Incorrect password.";
+            return;
+          }
+
+          localStorage.setItem(
+            "adminUser",
+            JSON.stringify({
+              id: userDoc.id,
+              name: userData.name || "",
+              email: userData.email || "",
+              username: userData.username || "",
+              gender: userData.gender || "",
+              bod: userData.bod || "",
+              img: userData.img || "",
+            })
+          );
+
+          window.location.href = "./dashboard/index.html";
+        } catch (error) {
+          console.error("Login error:", error);
+          errorEl.textContent = "Login failed. Please try again.";
+        }
+      });
+    </script>
+  </body>
+</html>

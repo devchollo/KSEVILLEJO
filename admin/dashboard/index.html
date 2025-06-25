@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard | Subscribers</title>
+    <link rel="stylesheet" href="../style.css" />
+   <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        background-color: #f9fafb;
+        color: #111827;
+      }
+
+      .dashboard {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        width: 250px;
+        background-color: #1e3a8a;
+        color: white;
+        padding: 2rem 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+      }
+
+      .sidebar h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+
+      .sidebar a {
+        color: white;
+        text-decoration: none;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        transition: background-color 0.3s;
+      }
+
+      .sidebar a:hover,
+      .sidebar a.active {
+        background-color: #2563eb;
+      }
+
+      .main {
+        flex: 1;
+        padding: 2rem;
+      }
+
+      .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+      }
+
+      .dashboard-header h1 {
+        font-size: 1.75rem;
+      }
+
+      .admin-summary {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        background-color: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        padding: 1rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        column-gap: 5rem;
+      }
+
+      .admin-summary img {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .controls,
+      .action-buttons,
+      .pagination {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      input,
+      select,
+      button {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        font-size: 1rem;
+      }
+
+      button {
+        background-color: #2563eb;
+        color: white;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      button:hover {
+        background-color: #1e40af;
+      }
+
+      ul#email-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+      }
+
+      #email-list li {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        border-bottom: 1px solid #eee;
+      }
+
+      .email {
+        flex: 1;
+        min-width: 200px;
+      }
+
+      .date {
+        width: 140px;
+        text-align: center;
+      }
+
+      .actions {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      /* Modern Modal Styles */
+      #editModal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.6);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+
+      #editModal .modal-content {
+        background: #ffffff;
+        padding: 2rem;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 500px;
+        animation: fadeIn 0.3s ease-in-out;
+      }
+
+      #editModal h2 {
+        margin-top: 0;
+        margin-bottom: 1rem;
+        font-size: 1.75rem;
+        color: #1e3a8a;
+        text-align: center;
+      }
+
+      #editModal label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        margin-top: 1rem;
+      }
+
+      #editModal input,
+      #editModal select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 1rem;
+        background-color: #f9fafb;
+        transition: border 0.2s;
+      }
+
+      #editModal input:focus,
+      #editModal select:focus {
+        border-color: #2563eb;
+        outline: none;
+      }
+
+      #editModal .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 1.5rem;
+        gap: 1rem;
+      }
+
+      #editModal .modal-actions button {
+        padding: 0.5rem 1.25rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: background-color 0.3s;
+      }
+
+      #editModal .modal-actions button:first-child {
+        background-color: #2563eb;
+        color: white;
+      }
+
+      #editModal .modal-actions button:first-child:hover {
+        background-color: #1e40af;
+      }
+
+      #editModal .modal-actions button:last-child {
+        background-color: #e5e7eb;
+        color: #374151;
+      }
+
+      #editModal .modal-actions button:last-child:hover {
+        background-color: #d1d5db;
+      }
+
+      #edit-status {
+        margin-top: 1rem;
+        font-size: 0.9rem;
+        color: #6b7280;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .dashboard {
+          flex-direction: column;
+        }
+
+        .sidebar {
+          width: 100%;
+          flex-direction: row;
+          justify-content: space-around;
+        }
+
+        .admin-summary {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dashboard">
+      <!-- Sidebar -->
+      <nav class="sidebar">
+        <h2>Dashboard</h2>
+        <a href="#" class="active">Subscribers</a>
+        <a href="#">Analytics</a>
+        <a href="#">Settings</a>
+        <a href="#" onclick="logout()" style="background-color: rgb(230, 67, 67);">Logout</a>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="main">
+        <div class="dashboard-header">
+          <h1>Newsletter Subscribers</h1>
+          <div><strong>Total:</strong> <span id="subscriber-count">0</span></div>
+        </div>
+
+        <div class="admin-summary" id="admin-profile">
+          <img id="admin-image" src="" alt="Admin Photo" / style="width: 250px; height: 250px;">
+          <div>
+            <p><strong>Name:</strong> <span id="admin-name"></span></p>
+            <p><strong>Email:</strong> <span id="admin-email"></span></p>
+            <p><strong>Date of Birth:</strong> <span id="admin-bod"></span></p>
+            <p><strong>Gender:</strong> <span id="admin-gender"></span></p>
+            <button onclick="editProfile()" style="margin-top: 1rem;">Edit Profile</button>
+          </div>
+        </div>
+
+        <div class="controls">
+          <input type="text" id="search" placeholder="Search email..." />
+          <input type="date" id="start-date" />
+          <input type="date" id="end-date" />
+          <select id="per-page">
+            <option value="5" selected>5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="all">All</option>
+          </select>
+        </div>
+
+        <div class="action-buttons">
+          <button id="copy-emails">Copy Emails</button>
+          <button id="mailto-emails">Email All</button>
+        </div>
+
+        <ul id="email-list"></ul>
+
+        <div class="pagination">
+          <button id="prev">Previous</button>
+          <span id="page-info">Page 1 of 1</span>
+          <button id="next">Next</button>
+        </div>
+      </main>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div id="editModal">
+      <div class="modal-content">
+        <h2>Edit Profile</h2>
+        <label>Name:</label>
+        <input type="text" id="edit-name" />
+        <label>Gender:</label>
+        <select id="edit-gender">
+          <option value="">Select</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+        </select>
+        <label>Date of Birth:</label>
+        <input type="date" id="edit-bod" />
+        <label>Photo URL:</label>
+        <input type="text" id="edit-image" />
+        <label>New Password:</label>
+        <input type="password" id="edit-password" />
+        <div id="edit-status" style="margin-bottom: 1rem; color: gray;"></div>
+        <div style="display: flex; justify-content: space-between;">
+          <button onclick="saveProfile()">Save</button>
+          <button onclick="closeModal()" style="background-color: gray;">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      async function hashPassword(password) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password);
+        const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+        return Array.from(new Uint8Array(hashBuffer))
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join("");
+      }
+
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+      import {
+        getFirestore,
+        collection,
+        getDocs,
+        query,
+        orderBy,
+        doc,
+        updateDoc,
+        deleteDoc,
+      } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+      import firebaseConfig from "../../config/config.js";
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
+      const adminUser = JSON.parse(localStorage.getItem("adminUser"));
+      if (!adminUser || !adminUser.id) {
+        alert("Unauthorized access. Please log in.");
+        window.location.href = "../index.html";
+      }
+
+      const adminProfile = document.getElementById("admin-profile");
+      document.getElementById("admin-name").textContent = adminUser.name;
+      document.getElementById("admin-email").textContent = adminUser.email;
+      document.getElementById("admin-gender").textContent = adminUser.gender;
+      document.getElementById("admin-bod").textContent = adminUser.bod;
+      document.getElementById("admin-image").src = adminUser.img;
+      adminProfile.style.display = "flex";
+
+      window.editProfile = function () {
+        document.getElementById("edit-name").value = adminUser.name || "";
+        document.getElementById("edit-gender").value = adminUser.gender || "";
+        document.getElementById("edit-bod").value = adminUser.bod || "";
+        document.getElementById("edit-image").value = adminUser.img || "";
+        document.getElementById("edit-password").value = "";
+        document.getElementById("edit-status").textContent = "";
+        document.getElementById("editModal").style.display = "flex";
+      };
+
+      window.closeModal = function () {
+        document.getElementById("editModal").style.display = "none";
+      };
+
+      window.saveProfile = async function () {
+        const name = document.getElementById("edit-name").value.trim();
+        const gender = document.getElementById("edit-gender").value.trim();
+        const bod = document.getElementById("edit-bod").value;
+        const image = document.getElementById("edit-image").value.trim();
+        const password = document.getElementById("edit-password").value.trim();
+        const statusEl = document.getElementById("edit-status");
+
+        const updates = { name, gender, bod, img: image };
+
+        if (password) {
+          if (password.length < 6) {
+            statusEl.style.color = "red";
+            statusEl.textContent = "❌ Password must be at least 6 characters.";
+            return;
+          }
+          updates.password = await hashPassword(password);
+        }
+
+        statusEl.textContent = "Updating...";
+
+        try {
+          const userRef = doc(db, "users", adminUser.id);
+          await updateDoc(userRef, updates);
+
+          const updatedUser = { ...adminUser, ...updates };
+          localStorage.setItem("adminUser", JSON.stringify(updatedUser));
+
+          statusEl.style.color = "green";
+          statusEl.textContent = "✅ Profile updated!";
+          setTimeout(() => location.reload(), 1000);
+        } catch (e) {
+          console.error("Update failed:", e);
+          statusEl.style.color = "red";
+          statusEl.textContent = "❌ Update failed.";
+        }
+      };
+
+      window.logout = () => {
+        localStorage.removeItem("adminUser");
+        window.location.href = "../index.html";
+      };
+
+      const listEl = document.getElementById("email-list");
+      const countEl = document.getElementById("subscriber-count");
+      const searchInput = document.getElementById("search");
+      const startDateInput = document.getElementById("start-date");
+      const endDateInput = document.getElementById("end-date");
+      const copyBtn = document.getElementById("copy-emails");
+      const mailBtn = document.getElementById("mailto-emails");
+      const pageInfo = document.getElementById("page-info");
+      const perPageSelect = document.getElementById("per-page");
+
+      let allData = [], page = 0, perPage = 5;
+
+      async function loadData() {
+        const q = query(collection(db, "newsletter"), orderBy("subscribedAt", "desc"));
+        const snapshot = await getDocs(q);
+
+        allData = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            email: data.email || '',
+            subscribedAt: data.subscribedAt || null
+          };
+        });
+
+        countEl.textContent = allData.length;
+        filterAndRender();
+      }
+
+      function getFilteredData() {
+        let filtered = allData;
+        const search = searchInput.value.toLowerCase();
+        const start = new Date(startDateInput.value);
+        const end = new Date(endDateInput.value);
+
+        if (search) {
+          filtered = filtered.filter((d) =>
+            d.email.toLowerCase().includes(search)
+          );
+        }
+        if (startDateInput.value) {
+          filtered = filtered.filter((d) => d.subscribedAt.toDate() >= start);
+        }
+        if (endDateInput.value) {
+          filtered = filtered.filter((d) => d.subscribedAt.toDate() <= end);
+        }
+
+        return filtered;
+      }
+
+      function filterAndRender() {
+        const filtered = getFilteredData();
+        perPage = perPageSelect.value === "all" ? filtered.length : parseInt(perPageSelect.value);
+        const startIndex = page * perPage;
+        const pageData = filtered.slice(startIndex, startIndex + perPage);
+
+        listEl.innerHTML = "";
+        if (!pageData.length) {
+          listEl.innerHTML = "<li>No results found.</li>";
+          pageInfo.textContent = "Page 0 of 0";
+          return;
+        }
+
+        pageData.forEach(({ id, email, subscribedAt }) => {
+          const dateStr = subscribedAt.toDate().toLocaleDateString();
+          const li = document.createElement("li");
+          li.innerHTML = `
+            <span class="email">${email}</span>
+            <span class="date">${dateStr}</span>
+            <div class="actions">
+              <button onclick="copyEmail('${email}')">📋</button>
+              <button onclick="sendEmail('${email}')">✉️</button>
+              <button onclick="deleteEmail('${id}')">🗑️</button>
+            </div>
+          `;
+          listEl.appendChild(li);
+        });
+
+        const totalPages = Math.ceil(filtered.length / perPage);
+        pageInfo.textContent = `Page ${page + 1} of ${totalPages}`;
+      }
+
+      window.copyEmail = (email) => {
+        navigator.clipboard
+          .writeText(email)
+          .then(() => alert(`✅ Copied: ${email}`))
+          .catch(() => alert("❌ Failed to copy email."));
+      };
+
+      window.sendEmail = (email) => {
+        window.location.href = `mailto:${email}`;
+      };
+
+      window.deleteEmail = async (id) => {
+        if (!confirm("Are you sure you want to delete this subscriber?")) return;
+
+        try {
+          await deleteDoc(doc(db, "newsletter", id));
+          alert("🗑️ Subscriber deleted.");
+          await loadData();
+        } catch (e) {
+          console.error("Delete failed:", e);
+          alert("❌ Failed to delete.");
+        }
+      };
+
+      copyBtn.onclick = () => {
+        const emails = getFilteredData().map((d) => d.email).join(", ");
+        navigator.clipboard
+          .writeText(emails)
+          .then(() => alert("✅ Emails copied to clipboard!"))
+          .catch(() => alert("❌ Failed to copy."));
+      };
+
+      mailBtn.onclick = () => {
+        const emails = getFilteredData().map((d) => d.email).join(",");
+        window.location.href = `mailto:?bcc=${encodeURIComponent(emails)}`;
+      };
+
+      document.getElementById("prev").onclick = () => {
+        if (page > 0) page--;
+        filterAndRender();
+      };
+
+      document.getElementById("next").onclick = () => {
+        if ((page + 1) * perPage < getFilteredData().length) page++;
+        filterAndRender();
+      };
+
+      searchInput.addEventListener("input", () => {
+        page = 0;
+        filterAndRender();
+      });
+      startDateInput.addEventListener("change", () => {
+        page = 0;
+        filterAndRender();
+      });
+      endDateInput.addEventListener("change", () => {
+        page = 0;
+        filterAndRender();
+      });
+      perPageSelect.addEventListener("change", () => {
+        page = 0;
+        filterAndRender();
+      });
+
+      loadData();
+    </script>
+  </body>
+</html>
