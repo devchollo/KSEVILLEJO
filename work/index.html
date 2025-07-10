@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Tracker</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-image: url(../res/sunbg.jpeg);
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        color: rgba(0, 0, 0, 1);
+        height: 100vh;
+      }
+      header {
+        background: rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(50px);
+        color: #fff;
+        padding: 1rem;
+        text-align: center;
+        font-size: 1.5rem;
+        position: relative;
+        top: 0;
+        z-index: 1000;
+      }
+      .container {
+        display: flex;
+      }
+      .sidebar {
+        width: 250px;
+        background: rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(10px);
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        padding: 2rem 1rem;
+        height: 100vh;
+      }
+      .sidebar h3 {
+        margin-bottom: 1rem;
+        color: black;
+      }
+      .sidebar button {
+        display: block;
+        width: 100%;
+        margin-bottom: 1rem;
+        background: #5a4fcf;
+        color: white;
+        border: none;
+        padding: 0.75rem;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      .main {
+        flex: 1;
+        padding: 2rem;
+      }
+      .tracker {
+        display: none;
+      }
+      .tracker.active {
+        display: block;
+      }
+      h2 {
+        color: #5a4fcf;
+      }
+      .form-section {
+        background: rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(10px);
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      .form-inputs {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+      }
+      .form-inputs input,
+      .form-inputs select {
+        padding: 0.5rem;
+        flex: 1;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+        background: rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(10px);
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 0.75rem;
+        text-align: left;
+      }
+      th {
+        background: rgba(255, 255, 255, 0.541);
+        backdrop-filter: blur(10px);
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+      }
+      .actions button {
+        margin-right: 0.5rem;
+        background: #5a4fcf;
+        color: #fff;
+        border: none;
+        padding: 0.4rem 0.6rem;
+        border-radius: 3px;
+        cursor: pointer;
+      }
+      .download-btn {
+        background: #5a4fcf;
+        color: #fff;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 1rem;
+      }
+      #salesSubmitBtn,
+      #surveySubmitBtn {
+        background: #5a4fcf;
+        color: #fff;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      .sort {
+        background: rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(10px);
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+        color: #000000;
+      }
+    </style>
+  </head>
+  <body>
+    <header>Dashboard Tracker</header>
+    <div class="container">
+      <div class="sidebar">
+        <h3>Trackers</h3>
+        <button onclick="toggleTracker('surveyTracker')">Survey Tracker</button>
+        <button onclick="toggleTracker('salesTracker')">Sales Tracker</button>
+      </div>
+      <div class="main">
+        <!-- Survey Tracker -->
+        <div class="tracker" id="surveyTracker">
+          <h2>Survey Tracker</h2>
+          <div class="form-section">
+            <h3>Add Survey</h3>
+            <div class="form-inputs">
+              <input type="text" id="surveyCustomer" placeholder="Customer Name" />
+              <input type="text" id="surveyCID" placeholder="CID" />
+              <input type="number" id="surveyCSAT" placeholder="CSAT Score" />
+              <input type="date" id="surveyInputDate" />
+              <button onclick="submitSurvey()" id="surveySubmitBtn">Submit</button>
+            </div>
+          </div>
+
+          <div class="sort">
+            <label>Filter by Date Range:</label>
+            <input type="date" id="surveyStartDate">
+            <input type="date" id="surveyEndDate">
+            <button onclick="loadSurveys()">Apply</button>
+            <button onclick="clearSurveyFilter()">Clear</button>
+          </div>
+
+          <table id="surveyTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Customer Name</th>
+                <th>CID</th>
+                <th>CSAT Score</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <button class="download-btn" onclick="downloadCSV('survey')">Download CSV</button>
+        </div>
+
+        <!-- Sales Tracker -->
+        <div class="tracker" id="salesTracker">
+          <h2>Sales Tracker</h2>
+          <div class="form-section">
+            <h3>Add Sales</h3>
+            <div class="form-inputs">
+              <input type="text" id="salesReference" placeholder="Reference" />
+              <input type="text" id="salesAmount" placeholder="Amount" />
+              <input type="date" id="salesInputDate" />
+              <select id="salesStatus">
+                <option value="pending">Pending</option>
+                <option value="closed-won">Closed-Won</option>
+                <option value="closed-lost">Closed-Lost</option>
+              </select>
+              <button onclick="submitSale()" id="salesSubmitBtn">Submit</button>
+            </div>
+          </div>
+
+          <div class="sort">
+            <label>Filter by Date Range:</label>
+            <input type="date" id="salesStartDate">
+            <input type="date" id="salesEndDate">
+            <button onclick="loadSales()">Apply</button>
+            <button onclick="clearSalesFilter()">Clear</button>
+          </div>
+
+
+          <table id="salesTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Reference</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <button class="download-btn" onclick="downloadCSV('sales')">Download CSV</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyBQsTlEwelBVfrMwFgCZlTu6MpOheHbPFQ",
+        authDomain: "ksevillejo-a121a.firebaseapp.com",
+        projectId: "ksevillejo-a121a",
+        storageBucket: "ksevillejo-a121a.appspot.com",
+        messagingSenderId: "925221811763",
+        appId: "1:925221811763:web:1633bdcff12accaa8b1546",
+        measurementId: "G-L512CXHRYF",
+      };
+
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+
+      function toggleTracker(id) {
+        document.querySelectorAll(".tracker").forEach((el) => el.classList.remove("active"));
+        document.getElementById(id).classList.add("active");
+      }
+
+      // --- Survey Tracker ---
+      let editingSurveyId = null;
+
+      function submitSurvey() {
+        const name = document.getElementById("surveyCustomer").value;
+        const cid = document.getElementById("surveyCID").value;
+        const csat = document.getElementById("surveyCSAT").value;
+        const date = document.getElementById("surveyInputDate").value;
+
+        if (editingSurveyId) {
+          db.collection("surveys").doc(editingSurveyId).update({ name, cid, csat, date }).then(() => {
+            editingSurveyId = null;
+            document.getElementById("surveySubmitBtn").innerText = "Submit";
+            clearSurveyForm();
+            loadSurveys();
+          });
+        } else {
+          db.collection("surveys").add({ name, cid, csat, date }).then(() => {
+            clearSurveyForm();
+            loadSurveys();
+          });
+        }
+      }
+
+      function loadSurveys() {
+        const tbody = document.querySelector("#surveyTable tbody");
+        tbody.innerHTML = "";
+
+        const start = document.getElementById("surveyStartDate").value;
+        const end = document.getElementById("surveyEndDate").value;
+
+        db.collection("surveys").get().then((snapshot) => {
+          snapshot.forEach((doc) => {
+            const data = doc.data();
+            const entryDate = new Date(data.date);
+            const inRange = (!start || new Date(start) <= entryDate) && (!end || entryDate <= new Date(end));
+
+            if (inRange) {
+              tbody.innerHTML += `
+                <tr>
+                  <td>${data.date}</td>
+                  <td>${data.name}</td>
+                  <td>${data.cid}</td>
+                  <td>${data.csat}</td>
+                  <td class="actions">
+                    <button onclick='editSurvey("${doc.id}", ${JSON.stringify(data)})'>Edit</button>
+                    <button onclick='deleteSurvey("${doc.id}")'>Delete</button>
+                  </td>
+                </tr>`;
+            }
+          });
+        });
+      }
+
+      function clearSurveyFilter() {
+        document.getElementById("surveyStartDate").value = "";
+        document.getElementById("surveyEndDate").value = "";
+        loadSurveys();
+      }
+
+      function editSurvey(id, data) {
+        editingSurveyId = id;
+        document.getElementById("surveyCustomer").value = data.name;
+        document.getElementById("surveyCID").value = data.cid;
+        document.getElementById("surveyCSAT").value = data.csat;
+        document.getElementById("surveyInputDate").value = data.date;
+        document.getElementById("surveySubmitBtn").innerText = "Update Survey";
+      }
+
+      function deleteSurvey(id) {
+        db.collection("surveys").doc(id).delete().then(loadSurveys);
+      }
+
+      function clearSurveyForm() {
+        document.getElementById("surveyCustomer").value = "";
+        document.getElementById("surveyCID").value = "";
+        document.getElementById("surveyCSAT").value = "";
+        document.getElementById("surveyInputDate").value = "";
+      }
+
+      // --- Sales Tracker ---
+      let editingSalesId = null;
+
+      function submitSale() {
+        const reference = document.getElementById("salesReference").value;
+        const amount = document.getElementById("salesAmount").value;
+        const date = document.getElementById("salesInputDate").value;
+        const status = document.getElementById("salesStatus").value;
+
+        if (editingSalesId) {
+          db.collection("sales").doc(editingSalesId).update({ reference, amount, date, status }).then(() => {
+            editingSalesId = null;
+            document.getElementById("salesSubmitBtn").innerText = "Submit";
+            clearSalesForm();
+            loadSales();
+          });
+        } else {
+          db.collection("sales").add({ reference, amount, date, status }).then(() => {
+            clearSalesForm();
+            loadSales();
+          });
+        }
+      }
+
+      function loadSales() {
+        const tbody = document.querySelector("#salesTable tbody");
+        tbody.innerHTML = "";
+
+        const start = document.getElementById("salesStartDate").value;
+        const end = document.getElementById("salesEndDate").value;
+        const sortOption = document.getElementById("sortSales").value;
+
+        db.collection("sales").get().then((snapshot) => {
+          let sales = [];
+          snapshot.forEach((doc) => {
+            sales.push({ id: doc.id, ...doc.data() });
+          });
+
+          // Filter by date range
+          sales = sales.filter((s) => {
+            const entryDate = new Date(s.date);
+            return (!start || new Date(start) <= entryDate) && (!end || entryDate <= new Date(end));
+          });
+
+          // Sort logic
+          if (sortOption === "date_asc") {
+            sales.sort((a, b) => new Date(a.date) - new Date(b.date));
+          } else if (sortOption === "date_desc") {
+            sales.sort((a, b) => new Date(b.date) - new Date(a.date));
+          } else if (sortOption === "amount_asc") {
+            sales.sort((a, b) => parseFloat(a.amount) - parseFloat(b.amount));
+          } else if (sortOption === "amount_desc") {
+            sales.sort((a, b) => parseFloat(b.amount) - parseFloat(a.amount));
+          }
+
+          sales.forEach((data) => {
+            tbody.innerHTML += `
+              <tr>
+                <td>${data.date}</td>
+                <td>${data.reference}</td>
+                <td>${data.amount}</td>
+                <td>${data.status}</td>
+                <td class="actions">
+                  <button onclick='editSale("${data.id}", ${JSON.stringify(data)})'>Edit</button>
+                  <button onclick='deleteSale("${data.id}")'>Delete</button>
+                </td>
+              </tr>`;
+          });
+        });
+      }
+
+      function clearSalesFilter() {
+        document.getElementById("salesStartDate").value = "";
+        document.getElementById("salesEndDate").value = "";
+        loadSales();
+      }
+
+      function editSale(id, data) {
+        editingSalesId = id;
+        document.getElementById("salesReference").value = data.reference;
+        document.getElementById("salesAmount").value = data.amount;
+        document.getElementById("salesInputDate").value = data.date;
+        document.getElementById("salesStatus").value = data.status;
+        document.getElementById("salesSubmitBtn").innerText = "Update Sale";
+      }
+
+      function deleteSale(id) {
+        db.collection("sales").doc(id).delete().then(loadSales);
+      }
+
+      function clearSalesForm() {
+        document.getElementById("salesReference").value = "";
+        document.getElementById("salesAmount").value = "";
+        document.getElementById("salesInputDate").value = "";
+        document.getElementById("salesStatus").value = "pending";
+      }
+
+      function downloadCSV(type) {
+        const headers =
+          type === "survey"
+            ? ["Date", "Customer Name", "CID", "CSAT Score"]
+            : ["Date", "Reference", "Amount", "Status"];
+        const table = document.querySelector(`#${type}Table tbody`);
+        const rows = Array.from(table.rows).map((row) =>
+          Array.from(row.cells).slice(0, -1).map((cell) => cell.innerText)
+        );
+        const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
+        const blob = new Blob([csv], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${type}_data.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      window.onload = function () {
+        toggleTracker("surveyTracker");
+        loadSurveys();
+        loadSales();
+      };
+    </script>
+  </body>
+</html>
