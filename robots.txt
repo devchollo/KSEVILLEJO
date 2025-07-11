@@ -1,0 +1,11 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /cgi-bin/
+Disallow: /temp/
+Disallow: /private/
+Disallow: /drafts/
+
+Allow: /blog/
+Allow: /careers/
+
+Sitemap: https://ksevillejo.com/sitemap.xml
